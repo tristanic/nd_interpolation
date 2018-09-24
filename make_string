@@ -1,0 +1,1 @@
+gcc test_nd_interp.cpp -o test_nd_interp -pthread -std=c++11 -lstdc++ -lm -g -O2

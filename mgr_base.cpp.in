@@ -1,0 +1,112 @@
+//! AUTO-GENERATED CODE - Do not edit directly!
+/*! This code is edited to the final compiled form by prepare_interpolators.py
+*/
+
+#include <vector>
+#include <unordered_map>
+#include <string>
+#include <sstream>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+#include <pybind11/stl.h>
+#include "nd_interp_mgr.h"
+
+namespace py=pybind11;
+typedef float fp_type;
+
+class $C_CLASS_NAME: public Interpolation_Mgr<fp_type>
+{
+public:
+    $C_CLASS_NAME();
+private:
+
+};
+
+$C_CLASS_NAME::$C_CLASS_NAME()
+    : Interpolation_Mgr<fp_type>()
+{
+    $CONSTRUCTOR
+}
+
+PYBIND11_MODULE($PY_MODULE_NAME, m) {
+    m.doc() = "$PY_DOCSTRING";
+
+    py::class_<$C_CLASS_NAME>(m, "$PY_CLASS_NAME")
+        .def(py::init<>())
+        .def("interpolate_single",
+            [](const $C_CLASS_NAME& self, const char* name,
+                py::array_t<fp_type, py::array::c_style|py::array::forcecast> angles)
+            {
+                auto info = angles.request();
+                auto dim = self.dim(name);
+                if (info.ndim != 1 || info.shape[0] !=dim)
+                {
+                    std::stringstream err_str;
+                    err_str << "Angles for " << name << " should be a (1 x "
+                        << dim << ") array! If you want to perform a set of "
+                        << "interpolations at once, use interpolate().";
+                    throw std::runtime_error(err_str.str());
+                }
+                fp_type* data;
+                std::vector<fp_type> data_vec;
+                // If input data is not fp_type, convert it
+                if (info.format != py::format_descriptor<fp_type>::format())
+                {
+                    for (size_t i=0; i < dim; ++i)
+                        data_vec.push_back(*angles.data(i));
+                    data = data_vec.data();
+                } else {
+                    data = (fp_type*)info.ptr;
+                }
+                return self.interpolate(name, data);
+            },
+            "$INTERPOLATE_SINGLE_DOCSTRING"
+            )
+        .def("interpolate",
+            [](const $C_CLASS_NAME& self, const char* name,
+                py::array_t<fp_type, py::array::c_style|py::array::forcecast> angles)
+            {
+                // Safety checks
+                auto info = angles.request();
+                auto dim = self.dim(name);
+                if (info.ndim != 2 || info.shape[1] !=dim)
+                {
+                    std::stringstream err_str;
+                    err_str << "Angles for " << name << " should be a (n x "
+                        << dim << ") array!";
+                    throw std::runtime_error(err_str.str());
+                }
+                size_t n = (size_t)info.shape[0];
+                fp_type* data;
+                std::vector<fp_type> data_vec;
+                // If input data is not fp_type, convert it
+                if (info.format != py::format_descriptor<fp_type>::format())
+                {
+                    for (size_t i=0; i<n; ++i)
+                        for (size_t j=0; j<dim; ++j)
+                            data_vec.push_back(*angles.data(i,j));
+                    data = data_vec.data();
+                } else {
+                    data = (fp_type*)(info.ptr);
+                }
+                py::array_t<fp_type> ret(n);
+                fp_type* ptr = (fp_type*)ret.request().ptr;
+                self.interpolate(name, data, n, ptr);
+                return ret;
+            },
+            "$INTERPOLATE_MULTIPLE_DOCSTRING"
+            )
+        .def("keys",
+            []($C_CLASS_NAME& self)
+            {
+                auto n = self.num_maps();
+                auto names = self.map_names();
+                std::vector<std::string> ret_names;
+                for (size_t i=0; i<n; ++i)
+                    ret_names.emplace_back(names[i]);
+                return ret_names;
+            })
+        .def("num_maps", &$C_CLASS_NAME::num_maps)
+        ;
+}
