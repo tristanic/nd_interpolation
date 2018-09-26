@@ -1,7 +1,9 @@
 rota.cpp
 rama.cpp
+cablam.cpp
 rota.h
 rama.h
+cablam.h
 
 *.stat
 *.data
