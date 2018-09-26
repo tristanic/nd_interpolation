@@ -6,7 +6,7 @@ rama.h
 cablam.h
 
 *.stat
-*.data
+rama*.data
 
 
 *.egg-info/*
