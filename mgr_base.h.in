@@ -1,0 +1,42 @@
+// AUTO-GENERATED CODE - Do not edit directly!
+/* This code is edited to its final form by prepare_interpolators.py.
+*  For API details, see nd_inter_mgr.h.
+*/
+#pragma once
+
+#include "nd_interp_mgr.h"
+
+#ifdef _WIN32
+# ifdef INTERP_EXPORTS
+#  define INTERP_IMEX __declspec(dllexport)
+# else
+#  define INTERP_IMEX __declspec(dllimport)
+# endif
+#else
+# if (__GNUC__ > 4) || (__GNUC__ == 4 && (defined(__APPLE__) || __GNUC_MINOR__ >= 3))
+#  define INTERP_IMEX __attribute__((visibility("default")))
+# else
+#  define INTERP_IMEX
+# endif
+#endif
+
+typedef float fp_type;
+
+// Export base class symbols
+template class INTERP_IMEX Interpolation_Mgr<fp_type>;
+
+// Singleton object to avoid duplication of the (possibly huge) maps
+class INTERP_IMEX $C_CLASS_NAME: public Interpolation_Mgr<fp_type>
+{
+public:
+    static $C_CLASS_NAME& instance()
+    {
+        static $C_CLASS_NAME instance;
+        return instance;
+    }
+    $C_CLASS_NAME($C_CLASS_NAME const&) = delete;
+    void operator=($C_CLASS_NAME const&) = delete;
+private:
+    $C_CLASS_NAME();
+
+};

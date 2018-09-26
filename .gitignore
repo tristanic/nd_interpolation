@@ -1,5 +1,7 @@
 rota.cpp
 rama.cpp
+rota.h
+rama.h
 
 *.egg-info/*
 build/*

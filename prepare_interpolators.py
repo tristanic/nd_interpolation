@@ -66,12 +66,13 @@ def prepare_constructor(file_dict):
             )
     return constructor_text
 
-
 def prepare_ramachandran(rama_files):
     '''
     Prepares a ready-to-compile C++ file containing the data and interpolation
     methods for Ramachandran contours.
     '''
+
+    prefix = 'rama'
 
     constructor_text = prepare_constructor(rama_files)
 
@@ -101,26 +102,36 @@ def prepare_ramachandran(rama_files):
         })
     '''
 
-    outfile = open('rama.cpp', 'wt')
-    with open('mgr_base.cpp.in', 'rt') as infile:
-        for line in infile:
-            line = line.replace('$EXTRA_DEFS', extra_defs)
-            line = line.replace('$C_CLASS_NAME', 'Ramachandran_Mgr')
-            line = line.replace('$PY_MODULE_NAME', 'ramachandran')
-            line = line.replace('$PY_CLASS_NAME', 'Rama_Mgr')
-            line = line.replace('$PY_DOCSTRING', module_docstring)
-            line = line.replace('$INTERPOLATE_SINGLE_DOCSTRING', interpolate_single_docstring)
-            line = line.replace('$INTERPOLATE_MULTIPLE_DOCSTRING', interpolate_multiple_docstring)
-            line = line.replace('$CONSTRUCTOR', constructor_text)
-            outfile.write(line)
+    with open(prefix+'.h', 'wt') as header_file:
+        with open('mgr_base.h.in', 'rt') as infile:
+            for line in infile:
+                line = line.replace('$C_CLASS_NAME', 'Ramachandran_Mgr')
+                header_file.write(line)
 
-    outfile.close()
+
+    with open(prefix+'.cpp', 'wt') as cpp_file:
+        with open('mgr_base.cpp.in', 'rt') as infile:
+            for line in infile:
+                line = line.replace('$FILE_PREFIX', prefix)
+                line = line.replace('$EXTRA_DEFS', extra_defs)
+                line = line.replace('$C_CLASS_NAME', 'Ramachandran_Mgr')
+                line = line.replace('$PY_MODULE_NAME', 'ramachandran')
+                line = line.replace('$PY_CLASS_NAME', 'Rama_Mgr')
+                line = line.replace('$PY_DOCSTRING', module_docstring)
+                line = line.replace('$INTERPOLATE_SINGLE_DOCSTRING', interpolate_single_docstring)
+                line = line.replace('$INTERPOLATE_MULTIPLE_DOCSTRING', interpolate_multiple_docstring)
+                line = line.replace('$CONSTRUCTOR', constructor_text)
+                cpp_file.write(line)
+
 
 def prepare_rotamers(rota_files):
     '''
     Prepares a ready-to-compile C++ file containing the data and interpolation
     methods for amino acid rotamers.
     '''
+
+    prefix='rota'
+
     constructor_text = prepare_constructor(rota_files)
 
     module_docstring = '''Fast C++ interpolator for rotamer validation.'''
@@ -140,20 +151,26 @@ def prepare_rotamers(rota_files):
 
     extra_defs = ''
 
-    outfile = open('rota.cpp', 'wt')
-    with open('mgr_base.cpp.in', 'rt') as infile:
-        for line in infile:
-            line = line.replace('$EXTRA_DEFS', extra_defs)
-            line = line.replace('$C_CLASS_NAME', 'Rotamer_Mgr')
-            line = line.replace('$PY_MODULE_NAME', 'rotamer')
-            line = line.replace('$PY_CLASS_NAME', 'Rota_Mgr')
-            line = line.replace('$PY_DOCSTRING', module_docstring)
-            line = line.replace('$INTERPOLATE_SINGLE_DOCSTRING', interpolate_single_docstring)
-            line = line.replace('$INTERPOLATE_MULTIPLE_DOCSTRING', interpolate_multiple_docstring)
-            line = line.replace('$CONSTRUCTOR', constructor_text)
-            outfile.write(line)
+    with open(prefix+'.h', 'wt') as header_file:
+        with open('mgr_base.h.in', 'rt') as infile:
+            for line in infile:
+                line = line.replace('$C_CLASS_NAME', 'Rotamer_Mgr')
+                header_file.write(line)
 
-    outfile.close()
+
+    with open('rota.cpp', 'wt') as cpp_file:
+        with open('mgr_base.cpp.in', 'rt') as infile:
+            for line in infile:
+                line = line.replace('$FILE_PREFIX', prefix)
+                line = line.replace('$EXTRA_DEFS', extra_defs)
+                line = line.replace('$C_CLASS_NAME', 'Rotamer_Mgr')
+                line = line.replace('$PY_MODULE_NAME', 'rotamer')
+                line = line.replace('$PY_CLASS_NAME', 'Rota_Mgr')
+                line = line.replace('$PY_DOCSTRING', module_docstring)
+                line = line.replace('$INTERPOLATE_SINGLE_DOCSTRING', interpolate_single_docstring)
+                line = line.replace('$INTERPOLATE_MULTIPLE_DOCSTRING', interpolate_multiple_docstring)
+                line = line.replace('$CONSTRUCTOR', constructor_text)
+                cpp_file.write(line)
 
 
 def generate_interpolator_data(file_name, wrap_axes = True):
@@ -255,21 +272,22 @@ def generate_interpolator_data(file_name, wrap_axes = True):
 def _extensions():
     import sys
     from setuptools import Extension
-    extra_compile_args=['-std=c++11',]
+    define_macros=[('INTERP_EXPORTS', None),]
+    extra_compile_args=['-std=c++11','-g0']
     libraries = []
     inc_dirs=[]
     lib_dirs=[]
     extra_link_args=[]
     if sys.platform in ('darwin', 'linux'):
-        extra_compile_args.append('-fvisibility=hidden')
-        extra_link_args.append('-s')
+        extra_compile_args.extend(['-fvisibility=hidden', '-fvisibility-inlines-hidden'])
+        extra_link_args.extend(['-fvisibility=hidden', '-fvisibility-inlines-hidden', '-s'])
     from numpy.distutils.misc_util import get_numpy_include_dirs
     inc_dirs.extend(get_numpy_include_dirs())
 
     extensions = []
     for package_name, package_files in _packages.items():
         extensions.append(Extension(package_name,
-            define_macros=None,
+            define_macros=define_macros,
             extra_compile_args=extra_compile_args,
             include_dirs=inc_dirs,
             library_dirs=lib_dirs,
