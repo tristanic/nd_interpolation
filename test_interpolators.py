@@ -37,7 +37,8 @@ print("Performing 100,000 single Rama evaluations took {} seconds".format(t))
 # known values were calculated in double precision but current implementation is
 # float
 abs_tol=1e-4
-from math import isclose
+from numpy import isclose
+
 known_rama_scores = (
     [['GENERAL', -1.30604503,  2.68515261], 0.38533466754824536],
     [['TRANSPRO', -1.02151863, -0.69621326], 0.7914812407411016],
@@ -47,12 +48,13 @@ known_rama_scores = (
 )
 
 for r in known_rama_scores:
+    rama_details, known_score = r
     try:
-        assert isclose(rmgr.interpolate_single(*r[0]), r[1], abs_tol=abs_tol)
+        assert isclose(rmgr.interpolate_single(*rama_details), known_score, atol=abs_tol)
     except AssertionError:
-        calc_score = rmgr.interpolate_single(*r[0])
+        calc_score = rmgr.interpolate_single(*rama_details)
         print('WARNING: Calculated score of {} for {} case phi={}, psi={} does not match stored value of {}.'
-            .format(calc_score, *r[0], r[1]))
+            .format(calc_score, rama_details[0], rama_details[1], known_score))
 
 
 
@@ -114,12 +116,13 @@ known_rota_scores = (
 )
 
 for r in known_rota_scores:
+    rota_details, known_score = r
     try:
-        assert isclose(rota_mgr.interpolate_single(*r[0]), r[1], abs_tol=abs_tol)
+        assert isclose(rota_mgr.interpolate_single(*rota_details), known_score, atol=abs_tol)
     except AssertionError:
-        calc_score = rota_mgr.interpolate_single(*r[0])
+        calc_score = rota_mgr.interpolate_single(*rota_details)
         print('WARNING: Calculated rotamer score of {} for {} with chi angles {} does not match stored value of {}.'
-            .format(calc_score, r[0][0], ','.join((str(c) for c in r[0][1])), r[1]))
+            .format(calc_score, rota_details[0], ','.join((str(c) for c in rota_details[1])), known_score))
 
 
 
