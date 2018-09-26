@@ -37,9 +37,29 @@ _rota_files = {
     'VAL': 'rota8000-val.data',
 }
 
+_cablam_files = {
+    'expected_cispro_CA': 'cablam.8000.expected.cispro_CA.stat',
+    'expected_cispro': 'cablam.8000.expected.cispro.stat',
+    'expected_general_CA': 'cablam.8000.expected.general_CA.stat',
+    'expected_general': 'cablam.8000.expected.general.stat',
+    'expected_gly_CA': 'cablam.8000.expected.gly_CA.stat',
+    'expected_gly': 'cablam.8000.expected.gly.stat',
+    'expected_transpro_CA': 'cablam.8000.expected.transpro_CA.stat',
+    'expected_transpro': 'cablam.8000.expected.transpro.stat',
+    'loose_alpha': 'cablam.8000.motif.loose_alpha.stat',
+    'loose_beta': 'cablam.8000.motif.loose_beta.stat',
+    'loose_threeten': 'cablam.8000.motif.loose_threeten.stat',
+    'regular_alpha': 'cablam.8000.motif.regular_alpha.stat',
+    'regular_beta': 'cablam.8000.motif.regular_beta.stat',
+    'regular_threeten': 'cablam.8000.motif.regular_threeten.stat',
+    'proline_cis': 'cablam.8000.proline.cis.stat',
+    'proline_trans': 'cablam.8000.proline.trans.stat',
+}
+
 _packages = {
     'ramachandran': ['rama.cpp',],
     'rotamer': ['rota.cpp',],
+    'cablam': ['cablam.cpp',],
 }
 
 def prepare_constructor(file_dict):
@@ -158,7 +178,7 @@ def prepare_rotamers(rota_files):
                 header_file.write(line)
 
 
-    with open('rota.cpp', 'wt') as cpp_file:
+    with open(prefix+'.cpp', 'wt') as cpp_file:
         with open('mgr_base.cpp.in', 'rt') as infile:
             for line in infile:
                 line = line.replace('$FILE_PREFIX', prefix)
@@ -171,6 +191,42 @@ def prepare_rotamers(rota_files):
                 line = line.replace('$INTERPOLATE_MULTIPLE_DOCSTRING', interpolate_multiple_docstring)
                 line = line.replace('$CONSTRUCTOR', constructor_text)
                 cpp_file.write(line)
+
+def prepare_cablam(cablam_files):
+    prefix='cablam'
+
+    constructor_text = prepare_constructor(cablam_files)
+
+    module_docstring = '''Fast C++ interpolator for CaBLAM validation.'''
+
+    interpolate_single_docstring='TO BE COMPLETED'
+
+    interpolate_multiple_docstring='TO BE COMPLETED'
+
+    extra_defs = ''
+
+    with open(prefix+'.h', 'wt') as header_file:
+        with open('mgr_base.h.in', 'rt') as infile:
+            for line in infile:
+                line = line.replace('$C_CLASS_NAME', 'CaBLAM_Mgr')
+                header_file.write(line)
+
+
+    with open(prefix+'.cpp', 'wt') as cpp_file:
+        with open('mgr_base.cpp.in', 'rt') as infile:
+            for line in infile:
+                line = line.replace('$FILE_PREFIX', prefix)
+                line = line.replace('$EXTRA_DEFS', extra_defs)
+                line = line.replace('$C_CLASS_NAME', 'CaBLAM_Mgr')
+                line = line.replace('$PY_MODULE_NAME', 'cablam')
+                line = line.replace('$PY_CLASS_NAME', 'CaBLAM_Mgr')
+                line = line.replace('$PY_DOCSTRING', module_docstring)
+                line = line.replace('$INTERPOLATE_SINGLE_DOCSTRING', interpolate_single_docstring)
+                line = line.replace('$INTERPOLATE_MULTIPLE_DOCSTRING', interpolate_multiple_docstring)
+                line = line.replace('$CONSTRUCTOR', constructor_text)
+                cpp_file.write(line)
+
+
 
 
 def generate_interpolator_data(file_name, wrap_axes = True):
@@ -304,6 +360,7 @@ def _extensions():
 if __name__ == '__main__':
     prepare_ramachandran(_rama_files)
     prepare_rotamers(_rota_files)
+    prepare_cablam(_cablam_files)
     extensions = _extensions()
     from distutils.core import setup
     setup(name="MolProbity_Interpolators",

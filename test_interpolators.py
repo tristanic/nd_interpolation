@@ -6,6 +6,9 @@ import timeit
 
 sys.path.insert(0, os.curdir)
 
+#### RAMACHANDRAN
+
+print ('TESTING RAMACHANDRAN INTERPOLATOR')
 print ('Importing Ramachandran interpolator')
 from ramachandran import Rama_Mgr
 
@@ -87,6 +90,9 @@ sp_results = rmgr.interpolate('GENERAL', angles_float)
 
 assert numpy.allclose(dp_results, sp_results)
 
+#### ROTAMERS
+
+print('\n\nTESTING ROTAMER INTERPOLATION')
 print('Importing rotamer interpolator')
 from rotamer import Rota_Mgr
 
@@ -138,3 +144,24 @@ from __main__ import lys_angles
     number=10
 )
 print('Performing 10x{} concerted lysine rotamer evaluations on random chi angles took {} seconds'.format(num_interpolations, t))
+
+
+### CABLAM
+print('\n\nTESTING CABLAM INTERPOLATION')
+from cablam import CaBLAM_Mgr
+cmgr = CaBLAM_Mgr()
+
+for cablam_name in cmgr.keys():
+    dim = cmgr.dim(cablam_name)
+    angles = ((numpy.random.rand(num_interpolations,dim)*0.5)*pi)
+
+    t = timeit.timeit(
+        "cmgr.interpolate(cablam_name, angles)",
+        setup='''
+from __main__ import cmgr
+from __main__ import angles
+from __main__ import cablam_name
+        ''',
+        number=10
+    )
+    print('Performing 10x{} concerted {}-dimensional {} CaBLAM evaluations on random dihedral angles took {} seconds'.format(num_interpolations, dim, cablam_name, t))
