@@ -15,11 +15,19 @@
 namespace py=pybind11;
 typedef float fp_type;
 
+// Singleton object to avoid duplication of the (possibly huge) maps
 class $C_CLASS_NAME: public Interpolation_Mgr<fp_type>
 {
 public:
-    $C_CLASS_NAME();
+    static $C_CLASS_NAME& instance()
+    {
+        static $C_CLASS_NAME instance;
+        return instance;
+    }
+    $C_CLASS_NAME($C_CLASS_NAME const&) = delete;
+    void operator=($C_CLASS_NAME const&) = delete;
 private:
+    $C_CLASS_NAME();
 
 };
 
@@ -32,15 +40,19 @@ $C_CLASS_NAME::$C_CLASS_NAME()
 PYBIND11_MODULE($PY_MODULE_NAME, m) {
     m.doc() = "$PY_DOCSTRING";
 
-    py::class_<$C_CLASS_NAME>(m, "$PY_CLASS_NAME")
-        .def(py::init<>())
+    py::class_<$C_CLASS_NAME, std::unique_ptr<$C_CLASS_NAME, py::nodelete>>(m, "$PY_CLASS_NAME")
+        .def(py::init([]()
+            {
+                return std::unique_ptr<$C_CLASS_NAME, py::nodelete>(&$C_CLASS_NAME::instance());
+            }))
+        $EXTRA_DEFS
         .def("interpolate_single",
             [](const $C_CLASS_NAME& self, const char* name,
                 py::array_t<fp_type, py::array::c_style|py::array::forcecast> angles)
             {
                 auto info = angles.request();
                 auto dim = self.dim(name);
-                if (info.ndim != 1 || info.shape[0] !=dim)
+                if (info.ndim != 1 || (size_t)info.shape[0] !=dim)
                 {
                     std::stringstream err_str;
                     err_str << "Angles for " << name << " should be a (1 x "
