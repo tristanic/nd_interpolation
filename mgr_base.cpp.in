@@ -98,14 +98,17 @@ PYBIND11_MODULE($PY_MODULE_NAME, m) {
             "$INTERPOLATE_MULTIPLE_DOCSTRING"
             )
         .def("keys",
-            []($C_CLASS_NAME& self)
+            [](const $C_CLASS_NAME& self)
             {
+                std::vector<std::string> names;
+                char buf[self.max_name_length()];
                 auto n = self.num_maps();
-                auto names = self.map_names();
-                std::vector<std::string> ret_names;
                 for (size_t i=0; i<n; ++i)
-                    ret_names.emplace_back(names[i]);
-                return ret_names;
+                {
+                    self.map_name(i, buf);
+                    names.push_back(std::string(buf));
+                }
+                return names;
             })
         .def("num_maps", &$C_CLASS_NAME::num_maps)
         ;

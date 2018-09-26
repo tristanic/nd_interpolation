@@ -14,23 +14,35 @@ public:
     void interpolate(const char* name, T* axis_vals, size_t n, T* return_values) const;
     void interpolate(size_t n_cases, const char** names, size_t* case_counts,
         T** axis_vals, T** return_values, bool threaded=true) const;
-    const char** names();
+    size_t max_name_length() const { return MAX_NAME_LENGTH; }
+    void name(size_t i, char* buf) const;
     size_t num_maps() const;
     size_t dim(const char* name) const;
 
 
 private:
     std::unordered_map<std::string, RegularGridInterpolator<T>> interpolators_;
-    std::vector<const char*> names_;
+    std::vector<std::string> names_;
+    void update_names_();
+    const size_t MAX_NAME_LENGTH=128;
 }; //Interpolation_Mgr_Impl
 
 // IMPLEMENTATIONS
+
 
 template<typename T> void
 Interpolation_Mgr_Impl<T>::add_interpolator(const char* name, size_t dim, size_t* n,
     T* minv, T* maxv, T* data)
 {
+    std::string mname(name);
+    if (mname.size() > MAX_NAME_LENGTH)
+    {
+        std::stringstream err_str;
+        err_str << "Map names are limited to " << MAX_NAME_LENGTH << " bytes!";
+        throw std::runtime_error(err_str.str());
+    }
     interpolators_[std::string(name)] = RegularGridInterpolator<T>(dim, n, minv, maxv, data);
+    update_names_();
 }
 
 template<typename T> T
@@ -69,13 +81,21 @@ Interpolation_Mgr_Impl<T>::interpolate(size_t n_cases, const char** names, size_
     }
 }
 
-template<typename T> const char**
-Interpolation_Mgr_Impl<T>::names()
+
+template<typename T> void
+Interpolation_Mgr_Impl<T>::update_names_()
 {
     names_.clear();
-    for (auto kv : interpolators_)
-        names_.push_back(kv.first.c_str());
-    return names_.data();
+    for (const auto& kv: interpolators_)
+    {
+        names_.push_back(kv.first);
+    }
+}
+
+template<typename T> void
+Interpolation_Mgr_Impl<T>::name(size_t i, char* buf) const
+{
+    strcpy(buf, names_.at(i).c_str());
 }
 
 template<typename T> size_t

@@ -75,8 +75,10 @@ public:
 
     //! Number of maps managed by this interpolator
     size_t num_maps() const { return impl_->num_maps(); }
-    //! List of names of maps managed by this interpolator (length given by num_maps())
-    const char** map_names() { return impl_->names(); }
+    //! Maximum size in bytes for the name of a map.
+    size_t max_name_length() const { return impl_->max_name_length(); }
+    //! Fills buf with the name of the map at position i.
+    void map_name(size_t i, char* buf ) const { impl_->name(i, buf); }
     //! Dimensionality of the interpolator matching the given name
     size_t dim(const char* name) const { return impl_->dim(name); }
 private:
