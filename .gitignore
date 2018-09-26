@@ -3,6 +3,10 @@ rama.cpp
 rota.h
 rama.h
 
+*.stat
+*.data
+
+
 *.egg-info/*
 build/*
 dist/*
