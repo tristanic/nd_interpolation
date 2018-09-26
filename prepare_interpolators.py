@@ -91,9 +91,20 @@ def prepare_ramachandran(rama_files):
         '   class: the class of Ramachandran contour for these residues(e.g. \'GENERAL\')\\\n'
         '   angles: a (n x 2) NumPy array containing (phi, psi) for each residue in radians.')
 
+    extra_defs = '''
+    .def("interpolate_single",
+        [](const $C_CLASS_NAME& self, const char* name,
+            const fp_type& phi, const fp_type& psi)
+        {
+            fp_type data[2] {phi, psi};
+            return self.interpolate(name, data);
+        })
+    '''
+
     outfile = open('rama.cpp', 'wt')
     with open('mgr_base.cpp.in', 'rt') as infile:
         for line in infile:
+            line = line.replace('$EXTRA_DEFS', extra_defs)
             line = line.replace('$C_CLASS_NAME', 'Ramachandran_Mgr')
             line = line.replace('$PY_MODULE_NAME', 'ramachandran')
             line = line.replace('$PY_CLASS_NAME', 'Rama_Mgr')
@@ -127,9 +138,12 @@ def prepare_rotamers(rota_files):
         '   residue_name: the 3-letter residue code for these residues(e.g. \'LEU\')\\\n'
         '   angles: a (n x num_chi) NumPy array containing chi angles for each residue in radians.')
 
+    extra_defs = ''
+
     outfile = open('rota.cpp', 'wt')
     with open('mgr_base.cpp.in', 'rt') as infile:
         for line in infile:
+            line = line.replace('$EXTRA_DEFS', extra_defs)
             line = line.replace('$C_CLASS_NAME', 'Rotamer_Mgr')
             line = line.replace('$PY_MODULE_NAME', 'rotamer')
             line = line.replace('$PY_CLASS_NAME', 'Rota_Mgr')
