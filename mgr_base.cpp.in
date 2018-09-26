@@ -109,6 +109,7 @@ namespace {
                     return names;
                 })
             .def("num_maps", &$C_CLASS_NAME::num_maps)
+            .def("dim", &$C_CLASS_NAME::dim)
             ;
 
     }
